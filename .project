@@ -3,6 +3,7 @@
 	<name>EmitterClient</name>
 	<comment></comment>
 	<projects>
+		<project>EmitterSchema</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
