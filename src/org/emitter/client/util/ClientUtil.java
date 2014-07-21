@@ -76,7 +76,6 @@ public class ClientUtil
 	
 	public <REQ, RESP> RESP post(String urlString, REQ req, Class<REQ> reqc, Class<RESP> respc) throws IOException
 	{
-		long begin = System.currentTimeMillis();
 		URL url;
 		try {
 			url = new URL("http://beta-app.emitter.co:8080/EmitterServer/Emitter/" + urlString);
@@ -106,7 +105,6 @@ public class ClientUtil
 		try
 		{
 			RESP obj = gson.fromJson(reader, respc);
-			long end = System.currentTimeMillis();
 			
 			return obj;
 		}
