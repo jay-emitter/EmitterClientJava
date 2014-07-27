@@ -16,13 +16,11 @@ import org.emitter.types.AuthReq;
 import org.emitter.types.LoginReq;
 import org.emitter.types.LoginResp;
 import org.emitter.types.Source;
+import org.emitter.utils.JsonUtil;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 
 public class ClientUtil 
 {
-	private Gson gson = new Gson();
 	private Persitance persist;
 	private final static String EMITTER_SOURCE_FILE = "source";
 	private final String programKey;
@@ -44,14 +42,14 @@ public class ClientUtil
 		if(null != obj)
 		{
 			StringReader reader = new StringReader(obj);
-			ret = (E) gson.fromJson(reader, c);
+			ret = JsonUtil.<E>from(reader);
 		}
 		return ret;
 	}
 	private <E> void objectToString(E obj, String key)
 	{
 		StringWriter writer = new StringWriter();
-		gson.toJson(obj, writer);
+		JsonUtil.<E>to(obj, writer);
 		persist.saveObject(writer.toString(), key);
 	}
 	
@@ -89,7 +87,7 @@ public class ClientUtil
 		httpCon.setRequestMethod("POST");
 		OutputStreamWriter out = new OutputStreamWriter(
 		    httpCon.getOutputStream());
-		String json = gson.toJson(req, reqc);
+		String json = JsonUtil.to(req, reqc);
 		out.write(json);
 		out.close();
 		InputStream resp;
@@ -104,14 +102,14 @@ public class ClientUtil
 		BufferedReader reader = new BufferedReader(new InputStreamReader(resp));
 		try
 		{
-			RESP obj = gson.fromJson(reader, respc);
+			RESP obj = JsonUtil.<RESP>from(reader);
 			
 			return obj;
 		}
-		catch(JsonSyntaxException ex)
+		catch(Exception ex)
 		{
 			ex.printStackTrace();
-			throw ex;
+			throw new RuntimeException(ex);
 		}
 	}
 	
