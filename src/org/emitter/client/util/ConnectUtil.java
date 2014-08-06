@@ -37,7 +37,7 @@ class ConnectUtil
 		catch(EmitterException ex)
 		{
 			src = new Source();
-			src.setProgramKey(programKey);
+			src.setAppKey(programKey);
 		}
 		return src;
 	}
@@ -78,7 +78,7 @@ class ConnectUtil
 		}
 		catch(MalformedURLException ex)
 		{
-			throw new EmitterException("Could not parse uri " + URI);
+			throw new EmitterException("Could not parse uri " + URI, ex);
 		}
 	}
 	
