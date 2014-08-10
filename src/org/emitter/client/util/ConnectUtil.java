@@ -4,6 +4,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.emitter.error.EmitterException;
+import org.emitter.error.LoginRequiredException;
 import org.emitter.types.EmitReq;
 import org.emitter.types.EmitResp;
 import org.emitter.types.LoginReq;
@@ -13,13 +14,23 @@ import org.emitter.types.RegisterResp;
 import org.emitter.types.Source;
 
 
-class ConnectUtil 
+/**
+ * @author jeremy
+ *
+ */
+public class ConnectUtil 
 {
 	private PersistenceUtil persist;
 	private final static String EMITTER_SOURCE_KEY = "source";
 	private final static String EMITTER_TOKEN_KEY = "token";
 	private final String programKey;
 	private final ConnectionOptions opt;
+	/**
+	 * 
+	 * @param programKey
+	 * @param persist
+	 * @param _opt
+	 */
 	public ConnectUtil(String programKey, PersistenceUtil  persist, ConnectionOptions _opt)
 	{
 		this.programKey = programKey;
@@ -27,12 +38,16 @@ class ConnectUtil
 		this.opt = _opt;
 	}
 	
+	/**
+	 * 
+	 * @return The Source
+	 */
 	public Source getSource()
 	{
 		Source src = null;
 		try
 		{
-			src = persist.getObject(EMITTER_SOURCE_KEY);
+			src = persist.getObject(EMITTER_SOURCE_KEY, Source.class);
 		}
 		catch(EmitterException ex)
 		{
@@ -69,7 +84,12 @@ class ConnectUtil
 		}
 		return new URL("http://" + subDomain + ".emitter.co:8080/EmitterServer/Emitter/" + URI);
 	}
-	
+	/**
+	 * 
+	 * @param URI
+	 * @return A connection object
+	 * @throws EmitterException
+	 */
 	public Connection createConnection(String URI) throws EmitterException 
 	{
 		try
@@ -89,7 +109,12 @@ class ConnectUtil
 	
 	private String getToken() throws EmitterException
 	{
-		return persist.<String>getObject(EMITTER_TOKEN_KEY);
+		String tok = persist.<String>getObject(EMITTER_TOKEN_KEY, String.class);
+		if(tok == null)
+		{
+			throw new LoginRequiredException("No Token");
+		}
+		return tok;
 	}
 
 	private void saveSource(Source src) throws EmitterException
@@ -119,6 +144,12 @@ class ConnectUtil
 		}
 	}
 	
+	/**
+	 * 
+	 * @param req The emit request
+	 * @return a response receiver for the emit response
+	 * @throws EmitterException
+	 */
 	public EmitRespReciever emit(EmitReq req) throws EmitterException
 	{
 		Connection con = createConnection("emit");
@@ -132,11 +163,19 @@ class ConnectUtil
 		{
 			req.setToken(token);
 		}
+		else
+		{
+			this.persist.getPersistence().setIsLoggedIn(false);
+		}
 		con.post(req);
 		return new EmitRespReciever(con, this);
 	}
 	
-	class LoginRespReciever extends ConnectionReciver
+	/**
+	 * @author jeremy
+	 *
+	 */
+	public class LoginRespReciever extends ConnectionReciver
 	{
 		private LoginRespReciever(Connection _con) {
 			super(_con, LoginResp.class);

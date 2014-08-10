@@ -33,7 +33,7 @@ public final class Connection
 	 * @return the object passed back from the server as a response
 	 * @throws EmitterException
 	 */
-	public <RESP> RESP getResponseObject() throws EmitterException
+	public <RESP> RESP getResponseObject(Class<RESP> cl) throws EmitterException
 	{
 		InputStream resp;
 		try
@@ -45,7 +45,7 @@ public final class Connection
 			throw new EmitterException("Connection Failed", ex);
 		}
 		BufferedReader reader = new BufferedReader(new InputStreamReader(resp));
-		RESP obj = JsonUtil.<RESP> from(reader);
+		RESP obj = JsonUtil.<RESP> from(reader, cl);
 		return obj;
 	}
 

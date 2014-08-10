@@ -13,7 +13,7 @@ public class ConnectionReciver
 	
 	private <T> Object recv(Class<T> type) throws EmitterException
 	{
-		return con.<T>getResponseObject();
+		return con.<T>getResponseObject(type);
 	}
 	
 	public Object recieve() throws EmitterException
