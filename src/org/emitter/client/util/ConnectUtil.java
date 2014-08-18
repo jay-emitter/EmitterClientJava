@@ -200,12 +200,8 @@ public class ConnectUtil
 	
 	public LoginRespReciever login(LoginReq req) throws EmitterException  
 	{
-		Connection con = createConnection("login");
-		Source src = getSource();
-		if(src != null)
-		{
-			req.setSource(src);
-		}
+		Connection con = createConnection("Login");
+		
 		con.post(req);
 		return new LoginRespReciever(con);
 
@@ -228,15 +224,19 @@ public class ConnectUtil
 				if(ret.getFailReson() == null)
 				{
 					saveSource(ret.getSource());
-					return ret;
+				
 				}
+				return ret;
 			}
-			throw new EmitterException("Illegal response");
+			else
+			{
+				throw new EmitterException("Illegal response");
+			}
 		}
 	}
 
 	public RegisterRespReciever register(RegisterReq req) throws EmitterException {
-		Connection con = createConnection("register");
+		Connection con = createConnection("Register");
 		con.post(req);
 		return new RegisterRespReciever(con);
 	}

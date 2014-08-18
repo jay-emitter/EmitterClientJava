@@ -38,15 +38,30 @@ public final class Connection
 		InputStream resp;
 		try
 		{
-			resp = httpCon.getInputStream();
+			int status = httpCon.getResponseCode();
+
+			if(status != httpCon.HTTP_OK)
+			{
+				resp = httpCon.getErrorStream();
+				BufferedReader reader = new BufferedReader(new InputStreamReader(resp));
+				StringBuilder error = new StringBuilder();
+				String line;
+				while((line = reader.readLine()) != null)error.append(line + "\n");
+				throw new EmitterException(error.toString());
+			}
+			else
+			{
+				resp = httpCon.getInputStream();
+				BufferedReader reader = new BufferedReader(new InputStreamReader(resp));
+				RESP obj = JsonUtil.<RESP> from(reader, cl);
+				return obj;
+			}
 		}
 		catch (IOException ex)
 		{
 			throw new EmitterException("Connection Failed", ex);
 		}
-		BufferedReader reader = new BufferedReader(new InputStreamReader(resp));
-		RESP obj = JsonUtil.<RESP> from(reader, cl);
-		return obj;
+		
 	}
 
 	/**
@@ -64,6 +79,8 @@ public final class Connection
 			OutputStreamWriter out = new OutputStreamWriter(
 					httpCon.getOutputStream());
 			JsonUtil.<REQ> to(obj, out);
+			out.flush();
+			out.close();
 		}
 		catch (IOException ex)
 		{
@@ -86,6 +103,8 @@ public final class Connection
 			OutputStreamWriter out = new OutputStreamWriter(
 					httpCon.getOutputStream());
 			out.write(json);
+			out.flush();
+			out.close();
 		}
 		catch (IOException ex)
 		{
@@ -108,12 +127,11 @@ public final class Connection
 		httpCon.setRequestProperty("Accept", "application/json");
 		try
 		{
-			httpCon.setRequestMethod("POST");
+			httpCon.setRequestMethod(method);
 		}
 		catch (ProtocolException e)
 		{
-			throw new EmitterException("Could not set request method to: "
-					+ method, e);
+			throw new EmitterException("Could not set request method to: "+ method, e);
 		}
 	}
 }
